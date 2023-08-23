@@ -70,9 +70,21 @@ new Vue({
             .catch(e => console.log(e))
         },
         removeTodo(id) {
+            const query = `
+                mutation {
+                    deleteTodo(id: "${id}")
+                }
+            `
             fetch(
-                `/api/todo/${id}`,
-                {method: 'DELETE'}
+                `/graphql`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({query})
+                }
             )
             .then(() => {
                 this.todos = this.todos.filter(t => t.id !== id)
@@ -80,19 +92,27 @@ new Vue({
             .catch(e => console.log(e))
         },
         completeTodo(id) {
+            const query = `
+                mutation {
+                    completeTodo(id: "${id}") {
+                        updatedAt
+                    }
+                }
+            `
             fetch(
-                `/api/todo/${id}`,
+                `/graphql`,
                 {
-                    method: 'PUT',
+                    method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
                     },
-                    body: JSON.stringify({done: true})
+                    body: JSON.stringify({query})
                 }
             )
             .then(res => res.json())
-            .then(({todo}) => {
-                const idx = this.todos.findIndex(t => t.id === todo.id)
+            .then(({data: {completeTodo: todo}}) => {
+                const idx = this.todos.findIndex(t => t.id === id)
                 this.todos[idx].updatedAt = todo.updatedAt
             })
             .catch(e => console.log(e))
