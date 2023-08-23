@@ -9,14 +9,30 @@ new Vue({
         }
     },
     created() {
+        const query = `
+            query {
+                getTodos {
+                    title
+                    createdAt
+                    updatedAt
+                    done
+                    id
+                }
+            }
+        `
         fetch(
-            '/api/todo',
+            '/graphql',
             {
-                method: 'GET'
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({query})
             }
         )
         .then(res => res.json())
-        .then(todos => {
+        .then(({data: {getTodos: todos}}) => {
             this.todos = todos
         })
         .catch(e => console.log(e))
@@ -91,7 +107,7 @@ new Vue({
                 options.minute = '2-digit'
                 options.second = '2-digit'
             }
-            return new Intl.DateTimeFormat('ru-RU', options).format(new Date(value))
+            return new Intl.DateTimeFormat('ru-RU', options).format(new Date(+value))
         }
     }
 })
